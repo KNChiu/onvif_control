@@ -2,8 +2,6 @@ from time import sleep
 from onvif import ONVIFCamera
 import zeep
 
-
-
 def zeep_pythonvalue(self, xmlvalue):
     return xmlvalue
 
@@ -45,7 +43,6 @@ class Onvif_control():
             print('erro :',e)
     
     def continuous_move(self):
-
         request = self.ptz.create_type('GetConfigurationOptions')
         request.ConfigurationToken = self.media_profile.PTZConfiguration.token
         ptz_configuration_options = self.ptz.GetConfigurationOptions(request)
@@ -57,7 +54,6 @@ class Onvif_control():
     
         if request.Velocity is None:
             request.Velocity = self.ptz.GetStatus({'ProfileToken': self.media_profile.token}).Position
-            request.Velocity = self.ptz.GetStatus({'ProfileToken': self.media_profile.token}).Position
             request.Velocity.PanTilt.space = ptz_configuration_options.Spaces.ContinuousPanTiltVelocitySpace[0].URI
             request.Velocity.Zoom.space = ptz_configuration_options.Spaces.ContinuousZoomVelocitySpace[0].URI
         
@@ -68,7 +64,6 @@ class Onvif_control():
         XMIN = ptz_configuration_options.Spaces.ContinuousPanTiltVelocitySpace[0].XRange.Min
         YMAX = ptz_configuration_options.Spaces.ContinuousPanTiltVelocitySpace[0].YRange.Max
         YMIN = ptz_configuration_options.Spaces.ContinuousPanTiltVelocitySpace[0].YRange.Min
-
         # self.move_up(self.ptz, request)
         # self.move_down(self.ptz, request)
         # self.move_right(self.ptz, request)
@@ -81,8 +76,8 @@ class Onvif_control():
         # import threading
         import time
 
-        RTSP = r"rtsp://admin:mirdc83300307@192.168.0.115:554/stream1"
-        RTSP = r"rtsp://admin:mirdc83300307@192.168.0.115:554/stream2"
+        RTSP = r"rtsp://admin:mirdc83300307@192.168.0.237:554/stream1"
+        RTSP = r"rtsp://admin:mirdc83300307@192.168.0.237:554/stream2"
 
         cap = cv2.VideoCapture(RTSP)
         
@@ -165,23 +160,6 @@ class Onvif_control():
 
 if __name__ == '__main__':
     # continuous_move()
-    Onvif_control = Onvif_control('192.168.0.115', 2020, 'admin', 'mirdc83300307')
+    Onvif_control = Onvif_control('192.168.0.237', 2020, 'admin', 'mirdc83300307')
     request = Onvif_control.continuous_move()
     Onvif_control.image_back(request)
-
-    # import threading
-    # import time
-
-    # # 建立一個子執行緒
-    # t = threading.Thread(target = Onvif_control.continuous_move())
-
-    # # 執行該子執行緒
-    # t.start()
-
-    # # 主執行緒繼續執行自己的工作
-    # Onvif_control.content_cam()
-
-    # # 等待 t 這個子執行緒結束
-    # t.join()
-
-    # print("Done.")
