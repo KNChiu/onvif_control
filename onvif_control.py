@@ -171,24 +171,31 @@ class Onvif_control():
 
 if __name__ == '__main__':
     RTSP = r"rtsp://admin:mirdc83300307@192.168.0.237:554/stream1"
+    check_finish = True
+    while check_finish:
+        try:
+            OnvifControl = Onvif_control('192.168.0.237', 2020, 'admin', 'mirdc83300307')
+            request = OnvifControl.continuous_move()
 
-    Onvif_control = Onvif_control('192.168.0.237', 2020, 'admin', 'mirdc83300307')
-    request = Onvif_control.continuous_move()
+            while True:
+                camera = cv2.VideoCapture(RTSP)
+                if camera.isOpened():
+                    print('Camera is connected')
+                    #call function
+                    response = OnvifControl.rtsp_captured_video(camera, request)
+                    if response == False:
+                        time.sleep(0.5)
+                        continue
+                    else:
+                        check_finish = False
+                        break
+                else:
+                    print('Camera not connected')
+                    camera.release()
+                    time.sleep(0.5)
+                    continue
 
-    while True:
-        camera = cv2.VideoCapture(RTSP)
-        if camera.isOpened():
-            print('Camera is connected')
-            #call function
-            response = Onvif_control.rtsp_captured_video(camera, request)
-            if response == False:
-                time.sleep(0.5)
-                continue
-            else:
-                break
-        else:
-            print('Camera not connected')
-            camera.release()
+        except Exception as e:
+            print('erro :',e)
             time.sleep(0.5)
             continue
-    
