@@ -69,6 +69,37 @@ class Onvif_control():
         # print(ptz_configuration_options)
         return request
 
+    def perform_move(self, ptz, request, timeout):
+        # Start continuous move
+        ptz.ContinuousMove(request)
+        # Wait a certain time
+        time.sleep(timeout)
+        # Stop continuous move
+        ptz.Stop({'ProfileToken': request.ProfileToken})
+ 
+    def move_up(self, ptz, request, timeout=1):
+        print('move up...') 
+        request.Velocity.PanTilt.x = 0
+        request.Velocity.PanTilt.y = YMAX
+        self.perform_move(ptz, request, timeout)
+    
+    def move_down(self, ptz, request, timeout=1):
+        print('move down...') 
+        request.Velocity.PanTilt.x = 0
+        request.Velocity.PanTilt.y = YMIN
+        self.perform_move(ptz, request, timeout)
+    
+    def move_right(self, ptz, request, timeout=1):
+        print('move right...') 
+        request.Velocity.PanTilt.x = XMAX
+        request.Velocity.PanTilt.y = 0
+        self.perform_move(ptz, request, timeout)
+    
+    def move_left(self, ptz, request, timeout=1):
+        print('move left...') 
+        request.Velocity.PanTilt.x = XMIN
+        request.Velocity.PanTilt.y = 0
+        self.perform_move(ptz, request, timeout)
 
     def image_back(self, request):
         RTSP = r"rtsp://admin:mirdc83300307@192.168.0.237:554/stream1"
@@ -109,43 +140,55 @@ class Onvif_control():
         cv2.destroyAllWindows()
         cap.release()
 
+    def rtsp_captured_video(self, camera, request):
+        while True:
+            ret, frame = camera.read()
+            if not ret:
+                print("Camera is disconnected!")
+                camera.release()
+                return False
+            else:
+                cv2.imshow('frame', frame)
 
-    def perform_move(self, ptz, request, timeout):
-        # Start continuous move
-        ptz.ContinuousMove(request)
-        # Wait a certain time
-        time.sleep(timeout)
-        # Stop continuous move
-        ptz.Stop({'ProfileToken': request.ProfileToken})
- 
-    def move_up(self, ptz, request, timeout=1):
-        print('move up...') 
-        request.Velocity.PanTilt.x = 0
-        request.Velocity.PanTilt.y = YMAX
-        self.perform_move(ptz, request, timeout)
-    
-    def move_down(self, ptz, request, timeout=1):
-        print('move down...') 
-        request.Velocity.PanTilt.x = 0
-        request.Velocity.PanTilt.y = YMIN
-        self.perform_move(ptz, request, timeout)
-    
-    def move_right(self, ptz, request, timeout=1):
-        print('move right...') 
-        request.Velocity.PanTilt.x = XMAX
-        request.Velocity.PanTilt.y = 0
-        self.perform_move(ptz, request, timeout)
-    
-    def move_left(self, ptz, request, timeout=1):
-        print('move left...') 
-        request.Velocity.PanTilt.x = XMIN
-        request.Velocity.PanTilt.y = 0
-        self.perform_move(ptz, request, timeout)
+            ch = cv2.waitKey(1)
+            if ch == ord('w'):
+                self.move_up(self.ptz, request)
+
+            elif ch == ord('a'):
+                self.move_left(self.ptz, request)
+
+            elif ch == ord('s'):
+                self.move_down(self.ptz, request)
+
+            elif ch == ord('d'):
+                self.move_right(self.ptz, request)
+
+            if ch == 27 or ch == ord('q') or ch == ord('Q'):
+                    break
+
+        return True
 
 
 if __name__ == '__main__':
+    RTSP = r"rtsp://admin:mirdc83300307@192.168.0.237:554/stream1"
+
     Onvif_control = Onvif_control('192.168.0.237', 2020, 'admin', 'mirdc83300307')
     request = Onvif_control.continuous_move()
-    start = time.time()
-    Onvif_control.image_back(request)
-    print(time.time()-start)
+
+    while True:
+        camera = cv2.VideoCapture(RTSP)
+        if camera.isOpened():
+            print('Camera is connected')
+            #call function
+            response = Onvif_control.rtsp_captured_video(camera, request)
+            if response == False:
+                time.sleep(0.5)
+                continue
+            else:
+                break
+        else:
+            print('Camera not connected')
+            camera.release()
+            time.sleep(0.5)
+            continue
+    
