@@ -1,0 +1,4 @@
+onvif-zeep==0.2.12
+opencv-python==4.5.1.48
+zeep==4.0.0
+
