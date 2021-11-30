@@ -1,6 +1,7 @@
-from time import sleep
+import time
 from onvif import ONVIFCamera
 import zeep
+
 
 def zeep_pythonvalue(self, xmlvalue):
     return xmlvalue
@@ -49,9 +50,9 @@ class Onvif_control():
 
         request = self.ptz.create_type('ContinuousMove')                         # 連續移動模式
         request.ProfileToken = self.media_profile.token
-
         # self.ptz.Stop({'ProfileToken': self.media_profile.token})
-    
+
+        # Get PTZ status
         if request.Velocity is None:
             request.Velocity = self.ptz.GetStatus({'ProfileToken': self.media_profile.token}).Position
             request.Velocity.PanTilt.space = ptz_configuration_options.Spaces.ContinuousPanTiltVelocitySpace[0].URI
@@ -64,10 +65,7 @@ class Onvif_control():
         XMIN = ptz_configuration_options.Spaces.ContinuousPanTiltVelocitySpace[0].XRange.Min
         YMAX = ptz_configuration_options.Spaces.ContinuousPanTiltVelocitySpace[0].YRange.Max
         YMIN = ptz_configuration_options.Spaces.ContinuousPanTiltVelocitySpace[0].YRange.Min
-        # self.move_up(self.ptz, request)
-        # self.move_down(self.ptz, request)
-        # self.move_right(self.ptz, request)
-        # self.move_left(self.ptz, request)
+        # print(ptz_configuration_options)
         return request
 
 
@@ -78,13 +76,8 @@ class Onvif_control():
 
         RTSP = r"rtsp://admin:mirdc83300307@192.168.0.237:554/stream1"
         RTSP = r"rtsp://admin:mirdc83300307@192.168.0.237:554/stream2"
-
-        cap = cv2.VideoCapture(RTSP)
         
-        # t_up = threading.Thread(target = self.move_up(self.ptz, request))
-        # t_left = threading.Thread(target = self.move_left(self.ptz, request))
-        # t_down = threading.Thread(target = self.move_down(self.ptz, request))
-        # t_right = threading.Thread(target = self.move_right(self.ptz, request))
+        cap = cv2.VideoCapture(RTSP)
 
 
         while True:
@@ -96,20 +89,17 @@ class Onvif_control():
                 cv2.imshow("frame",frame)
                 ch = cv2.waitKey(1)
                 if ch == ord('w'):
-                    # t_up.start()
                     self.move_up(self.ptz, request)
 
                 elif ch == ord('a'):
-                    # t_left.start()
                     self.move_left(self.ptz, request)
 
                 elif ch == ord('s'):
-                    # t_down.start()
                     self.move_down(self.ptz, request)
 
                 elif ch == ord('d'):
-                    # t_right.start()
                     self.move_right(self.ptz, request)
+
 
                 if ch == 27 or ch == ord('q') or ch == ord('Q'):
                     break
@@ -127,7 +117,7 @@ class Onvif_control():
         # Start continuous move
         ptz.ContinuousMove(request)
         # Wait a certain time
-        sleep(timeout)
+        time.sleep(timeout)
         # Stop continuous move
         ptz.Stop({'ProfileToken': request.ProfileToken})
  
@@ -156,10 +146,9 @@ class Onvif_control():
         self.perform_move(ptz, request, timeout)
 
 
-
-
 if __name__ == '__main__':
-    # continuous_move()
     Onvif_control = Onvif_control('192.168.0.237', 2020, 'admin', 'mirdc83300307')
     request = Onvif_control.continuous_move()
+    start = time.time()
     Onvif_control.image_back(request)
+    print(time.time()-start)
