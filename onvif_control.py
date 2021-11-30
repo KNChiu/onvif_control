@@ -1,4 +1,5 @@
 import time
+import cv2 
 from onvif import ONVIFCamera
 import zeep
 
@@ -70,10 +71,6 @@ class Onvif_control():
 
 
     def image_back(self, request):
-        import cv2 
-        # import threading
-        import time
-
         RTSP = r"rtsp://admin:mirdc83300307@192.168.0.237:554/stream1"
         RTSP = r"rtsp://admin:mirdc83300307@192.168.0.237:554/stream2"
         
