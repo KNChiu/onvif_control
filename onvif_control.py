@@ -63,6 +63,8 @@ class Onvif_control():
             request.Velocity = self.ptz.GetStatus({'ProfileToken': self.media_profile.token}).Position
             request.Velocity.PanTilt.space = ptz_configuration_options.Spaces.ContinuousPanTiltVelocitySpace[0].URI
             request.Velocity.Zoom.space = ptz_configuration_options.Spaces.ContinuousZoomVelocitySpace[0].URI
+            # request.Position.Zoom = 1
+            # request.Speed.Zoom = 1
         
         # Get range of pan and tilt
         # NOTE: X and Y are velocity vector
@@ -71,7 +73,7 @@ class Onvif_control():
         XMIN = ptz_configuration_options.Spaces.ContinuousPanTiltVelocitySpace[0].XRange.Min
         YMAX = ptz_configuration_options.Spaces.ContinuousPanTiltVelocitySpace[0].YRange.Max
         YMIN = ptz_configuration_options.Spaces.ContinuousPanTiltVelocitySpace[0].YRange.Min
-        # print(ptz_configuration_options)
+
         return request
 
     def perform_move(self, ptz, request, timeout):      # 移動命令
@@ -79,29 +81,48 @@ class Onvif_control():
         time.sleep(timeout)                             # 移動延遲時間
         ptz.Stop({'ProfileToken': request.ProfileToken})    # 停止移動
  
-    def move_up(self, ptz, request, timeout=1):         # 上移
+    def move_up(self, ptz, request, timeout=0.5):         # 上移
         print('move up...') 
         request.Velocity.PanTilt.x = 0
         request.Velocity.PanTilt.y = YMAX
+        request.Velocity.Zoom.x = 0
         self.perform_move(ptz, request, timeout)
     
-    def move_down(self, ptz, request, timeout=1):       # 下移
+    def move_down(self, ptz, request, timeout=0.5):       # 下移
         print('move down...') 
         request.Velocity.PanTilt.x = 0
         request.Velocity.PanTilt.y = YMIN
+        request.Velocity.Zoom.x = 0
         self.perform_move(ptz, request, timeout)
     
-    def move_right(self, ptz, request, timeout=1):      # 右移
+    def move_right(self, ptz, request, timeout=0.5):      # 右移
         print('move right...') 
         request.Velocity.PanTilt.x = XMAX
         request.Velocity.PanTilt.y = 0
+        request.Velocity.Zoom.x = 0
         self.perform_move(ptz, request, timeout)
     
-    def move_left(self, ptz, request, timeout=1):       # 左移
+    def move_left(self, ptz, request, timeout=0.5):       # 左移
         print('move left...') 
         request.Velocity.PanTilt.x = XMIN
         request.Velocity.PanTilt.y = 0
+        request.Velocity.Zoom.x = 0
         self.perform_move(ptz, request, timeout)
+
+    def zoom_in(self, ptz, request, timeout=0.5):         # zoom in
+        print('zoom in') 
+        request.Velocity.PanTilt.x = 0
+        request.Velocity.PanTilt.y = 0
+        request.Velocity.Zoom.x = 0.2
+        self.perform_move(ptz, request, timeout)
+
+    def zoom_out(self, ptz, request, timeout=0.5):         # zoom out
+        print('zoom in') 
+        request.Velocity.PanTilt.x = 0
+        request.Velocity.PanTilt.y = 0
+        request.Velocity.Zoom.x = -0.2
+        self.perform_move(ptz, request, timeout)
+        
 
     def rtsp_captured_video(self, camera, request):     # RTSP 串流保持與控制
         while True:
@@ -128,6 +149,13 @@ class Onvif_control():
             elif ch == ord('d'):
                 self.move_right(self.ptz, request)
 
+            elif ch == ord('z'):
+                self.zoom_in(self.ptz, request)
+            
+            elif ch == ord('c'):
+                self.zoom_out(self.ptz, request)
+                
+
             if ch == 27 or ch == ord('q') or ch == ord('Q'):
                     break
 
@@ -136,6 +164,11 @@ class Onvif_control():
 
 if __name__ == '__main__':
     RTSP = r"rtsp://admin:mirdc83300307@192.168.0.237:554/stream1"
+
+    # OnvifControl = Onvif_control('192.168.0.237', 2020, 'admin', 'mirdc83300307')
+    # request = OnvifControl.continuous_move()
+
+
     check_finish = True
     while check_finish:
         try:
