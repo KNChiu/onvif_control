@@ -24,20 +24,22 @@ def work_with_captured_video(camera):
 
 
 while True:
-    camera = cv2.VideoCapture(RTSP)
-    if camera.isOpened():
-        print('Camera is connected')
-        #call function
-        response = work_with_captured_video(camera)
-        if response == False:
-            time.sleep(10)
-            continue
+    try :
+        camera = cv2.VideoCapture(RTSP)
+        if camera.isOpened():
+            print('Camera is connected')
+            response = work_with_captured_video(camera)
+            if response == False:
+                time.sleep(0.5)
+                continue
+            else:
+                break
         else:
-            break
-    else:
-        print('Camera not connected')
-        camera.release()
-        time.sleep(10)
+            print('Camera not connected')
+            camera.release()
+            time.sleep(0.5)
+            continue
+    except Exception as e:
+        print('erro :',e)
+        time.sleep(0.5)
         continue
-
-print(time.time()-start)

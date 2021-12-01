@@ -23,9 +23,11 @@ class Onvif_control():
 
             self.resp = self.mycam.devicemgmt.GetHostname()         # 取得 hostname
             dt = self.mycam.devicemgmt.GetSystemDateAndTime()       # 獲取系統日期和時間
+
+            # ================ 時間取得 ================
             tz = dt.TimeZone.TZ
 
-            year = dt.LocalDateTime.Date.Year
+            year = dt.LocalDateTime.Date.Year               
             Month = dt.LocalDateTime.Date.Month
             Day = dt.LocalDateTime.Date.Day
 
@@ -41,10 +43,13 @@ class Onvif_control():
             print("時間: %s:%s:%s"  %(hour, Minute, Second))
             print("==========初始化完成==========")
 
+            # ================ 時間取得 ================
+
+
         except Exception as e:
             print('erro :',e)
     
-    def continuous_move(self):
+    def continuous_move(self):                          # 連續移動控制
         request = self.ptz.create_type('GetConfigurationOptions')
         request.ConfigurationToken = self.media_profile.PTZConfiguration.token
         ptz_configuration_options = self.ptz.GetConfigurationOptions(request)
@@ -69,78 +74,36 @@ class Onvif_control():
         # print(ptz_configuration_options)
         return request
 
-    def perform_move(self, ptz, request, timeout):
-        # Start continuous move
+    def perform_move(self, ptz, request, timeout):      # 移動命令
         ptz.ContinuousMove(request)
-        # Wait a certain time
-        time.sleep(timeout)
-        # Stop continuous move
-        ptz.Stop({'ProfileToken': request.ProfileToken})
+        time.sleep(timeout)                             # 移動延遲時間
+        ptz.Stop({'ProfileToken': request.ProfileToken})    # 停止移動
  
-    def move_up(self, ptz, request, timeout=1):
+    def move_up(self, ptz, request, timeout=1):         # 上移
         print('move up...') 
         request.Velocity.PanTilt.x = 0
         request.Velocity.PanTilt.y = YMAX
         self.perform_move(ptz, request, timeout)
     
-    def move_down(self, ptz, request, timeout=1):
+    def move_down(self, ptz, request, timeout=1):       # 下移
         print('move down...') 
         request.Velocity.PanTilt.x = 0
         request.Velocity.PanTilt.y = YMIN
         self.perform_move(ptz, request, timeout)
     
-    def move_right(self, ptz, request, timeout=1):
+    def move_right(self, ptz, request, timeout=1):      # 右移
         print('move right...') 
         request.Velocity.PanTilt.x = XMAX
         request.Velocity.PanTilt.y = 0
         self.perform_move(ptz, request, timeout)
     
-    def move_left(self, ptz, request, timeout=1):
+    def move_left(self, ptz, request, timeout=1):       # 左移
         print('move left...') 
         request.Velocity.PanTilt.x = XMIN
         request.Velocity.PanTilt.y = 0
         self.perform_move(ptz, request, timeout)
 
-    def image_back(self, request):
-        RTSP = r"rtsp://admin:mirdc83300307@192.168.0.237:554/stream1"
-        RTSP = r"rtsp://admin:mirdc83300307@192.168.0.237:554/stream2"
-        
-        cap = cv2.VideoCapture(RTSP)
-
-
-        while True:
-            start = time.time()
-
-            ret, frame = cap.read()
-
-            if ret:
-                cv2.imshow("frame",frame)
-                ch = cv2.waitKey(1)
-                if ch == ord('w'):
-                    self.move_up(self.ptz, request)
-
-                elif ch == ord('a'):
-                    self.move_left(self.ptz, request)
-
-                elif ch == ord('s'):
-                    self.move_down(self.ptz, request)
-
-                elif ch == ord('d'):
-                    self.move_right(self.ptz, request)
-
-
-                if ch == 27 or ch == ord('q') or ch == ord('Q'):
-                    break
-            else: 
-                break
-
-            end = time.time()
-            print("FPS：%f " % (1/(end - start)))
-
-        cv2.destroyAllWindows()
-        cap.release()
-
-    def rtsp_captured_video(self, camera, request):
+    def rtsp_captured_video(self, camera, request):     # RTSP 串流保持與控制
         while True:
             ret, frame = camera.read()
             if not ret:
@@ -148,7 +111,9 @@ class Onvif_control():
                 camera.release()
                 return False
             else:
-                cv2.imshow('frame', frame)
+                cv2.namedWindow('onvif camera', cv2.WINDOW_NORMAL)                                          
+                cv2.setWindowProperty('onvif camera', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)       # 全螢幕顯示
+                cv2.imshow('onvif camera', frame)
 
             ch = cv2.waitKey(1)
             if ch == ord('w'):
