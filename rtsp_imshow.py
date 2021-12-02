@@ -23,7 +23,9 @@ def work_with_captured_video(camera):
             camera.release()
             return False
         else:
-            cv2.imshow('frame', frame)
+            cv2.namedWindow('onvif camera', cv2.WINDOW_NORMAL)                                          
+            cv2.setWindowProperty('onvif camera', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)       # 全螢幕顯示
+            cv2.imshow('onvif camera', frame)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
