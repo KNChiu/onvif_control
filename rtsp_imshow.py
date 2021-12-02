@@ -2,7 +2,14 @@ import time
 import cv2 
 import time
 
-RTSP = r"rtsp://admin:mirdc83300307@192.168.0.237:554/stream1"
+userName = 'admin'
+passWord = 'mirdc83300307'
+ip = '192.168.0.237'
+
+RTSP = r'rtsp://' + str(userName) + ':' + str(passWord) + '@' + str(ip) + "/stream1"
+
+
+# RTSP = r"rtsp://admin:mirdc83300307@192.168.0.237:554/stream1"
 # # RTSP = r"rtsp://admin:mirdc83300307@192.168.0.237:554/stream2"
 
 
