@@ -163,29 +163,29 @@ class Onvif_control():
 
 
 if __name__ == '__main__':
-    RTSP = r"rtsp://admin:mirdc83300307@192.168.0.237:554/stream1"
+    userName = 'admin'
+    passWord = 'mirdc83300307'
+    ip = '192.168.0.237'
 
-    # OnvifControl = Onvif_control('192.168.0.237', 2020, 'admin', 'mirdc83300307')
-    # request = OnvifControl.continuous_move()
-
+    # 設定 RTSP 連線網址
+    RTSP = r'rtsp://' + str(userName) + ':' + str(passWord) + '@' + str(ip) + "/stream1"
 
     check_finish = True
     while check_finish:
         try:
-            OnvifControl = Onvif_control('192.168.0.237', 2020, 'admin', 'mirdc83300307')
+            OnvifControl = Onvif_control(str(ip), 2020, str(userName), str(passWord))   # 繼承 Onvif_control
             request = OnvifControl.continuous_move()
 
             while True:
-                camera = cv2.VideoCapture(RTSP)
+                camera = cv2.VideoCapture(RTSP)                                   # 判斷影像是否開啟
                 if camera.isOpened():
                     print('Camera is connected')
-                    #call function
-                    response = OnvifControl.rtsp_captured_video(camera, request)
-                    if response == False:
-                        time.sleep(0.5)
+                    response = OnvifControl.rtsp_captured_video(camera, request)    # 進入串流副程式
+                    if response == False:                                           # 如果意外斷線嘗試重新連線
+                        time.sleep(0.5)                                             # 等待 0.5秒 重連
                         continue
                     else:
-                        check_finish = False
+                        check_finish = False                                        # 如果正常退出結束程式
                         break
                 else:
                     print('Camera not connected')
